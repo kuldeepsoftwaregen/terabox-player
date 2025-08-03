@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free TeraBox Video Player & Downloader</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .input-section {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        .url-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .url-input:focus {
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .video-section {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            display: none;
+        }
+
+        .video-info {
+            margin-bottom: 20px;
+        }
+
+        .video-title {
+            font-size: 1.4em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .video-details {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .video-player {
+            width: 100%;
+            max-height: 500px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .download-section {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 30px;
+            font-size: 18px;
+            color: #667eea;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid #f5c6cb;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid #c3e6cb;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .feature {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .feature h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .input-section, .video-section {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎬 Free TeraBox Player</h1>
+            <p>Play and download TeraBox videos instantly - 100% Free & Unlimited</p>
+        </div>
+
+        <div class="input-section">
+            <input type="url" id="videoUrl" class="url-input" 
+                   placeholder="Paste your TeraBox video link here (e.g., https://terabox.com/s/xxxxx)"
+                   value="https://1024terabox.com/s/1L6iJIocQ1lM1q2zzeHI4hg">
+            <button onclick="processVideo()" class="btn" id="processBtn">
+                🎥 Get Video
+            </button>
+            <button onclick="clearAll()" class="btn" style="background: #dc3545;">
+                🗑️ Clear
+            </button>
+        </div>
+
+        <div id="loadingSection" class="video-section">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Processing your TeraBox link... Please wait</p>
+            </div>
+        </div>
+
+        <div id="videoSection" class="video-section">
+            <div class="video-info">
+                <div id="videoTitle" class="video-title"></div>
+                <div id="videoDetails" class="video-details"></div>
+            </div>
+
+            <video id="videoPlayer" class="video-player" controls preload="metadata">
+                <p>Your browser doesn't support HTML5 video. Here is a 
+                   <a href="#" id="videoLink">link to the video</a> instead.</p>
+            </video>
+
+            <div class="download-section">
+                <button onclick="downloadVideo()" class="btn" id="downloadBtn">
+                    ⬇️ Download Video
+                </button>
+                <button onclick="openInNewTab()" class="btn">
+                    🔗 Open Direct Link
+                </button>
+            </div>
+        </div>
+
+        <div id="messageArea"></div>
+
+        <div class="features">
+            <div class="feature">
+                <h3>🆓 100% Free</h3>
+                <p>No registration, no payments, completely free to use</p>
+            </div>
+            <div class="feature">
+                <h3>⚡ Fast Processing</h3>
+                <p>Get your video links in seconds</p>
+            </div>
+            <div class="feature">
+                <h3>🔒 Privacy First</h3>
+                <p>We don't store your links or videos</p>
+            </div>
+            <div class="feature">
+                <h3>📱 Mobile Friendly</h3>
+                <p>Works perfectly on all devices</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentVideoData = null;
+
+        async function processVideo() {
+            const url = document.getElementById('videoUrl').value.trim();
+            const messageArea = document.getElementById('messageArea');
+            
+            // Clear previous messages
+            messageArea.innerHTML = '';
+            
+            // Validate URL
+            if (!url) {
+                showMessage('Please enter a TeraBox video URL', 'error');
+                return;
+            }
+
+            if (!isValidTeraBoxUrl(url)) {
+                showMessage('Please enter a valid TeraBox URL (should contain terabox.com)', 'error');
+                return;
+            }
+
+            // Show loading
+            document.getElementById('loadingSection').style.display = 'block';
+            document.getElementById('videoSection').style.display = 'none';
+            document.getElementById('processBtn').disabled = true;
+
+            try {
+                // Use CORS proxy services to bypass CORS issues
+                const corsProxies = [
+                    'https://api.allorigins.win/raw?url=',
+                    'https://corsproxy.io/?',
+                    'https://cors-anywhere.herokuapp.com/',
+                    'https://thingproxy.freeboard.io/fetch/'
+                ];
+
+                const apiEndpoints = [
+                    `https://ashlynn.serv00.net/Ashlynnterabox.php/?url=${encodeURIComponent(url)}`,
+                    `https://terabox-dl.qtcloud.workers.dev/api?url=${encodeURIComponent(url)}`,
+                    `https://terabox-api.vercel.app/api/download?url=${encodeURIComponent(url)}`
+                ];
+
+                let videoData = null;
+                let lastError = null;
+
+                // Try direct fetch first (works when hosted online)
+                for (const endpoint of apiEndpoints) {
+                    try {
+                        const response = await fetch(endpoint, {
+                            method: 'GET',
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            if (data && (data.download_url || data.downloadUrl || data.url)) {
+                                videoData = data;
+                                break;
+                            }
+                        }
+                    } catch (error) {
+                        console.log(`Direct fetch failed: ${endpoint}`, error);
+                        lastError = error;
+                    }
+                }
+
+                // If direct fetch fails, try with CORS proxies
+                if (!videoData) {
+                    for (const proxy of corsProxies) {
+                        for (const endpoint of apiEndpoints) {
+                            try {
+                                const proxiedUrl = proxy + encodeURIComponent(endpoint);
+                                const response = await fetch(proxiedUrl);
+                                
+                                if (response.ok) {
+                                    const data = await response.json();
+                                    if (data && (data.download_url || data.downloadUrl || data.url)) {
+                                        videoData = data;
+                                        break;
+                                    }
+                                }
+                            } catch (error) {
+                                console.log(`Proxy fetch failed: ${proxy}${endpoint}`, error);
+                                lastError = error;
+                                continue;
+                            }
+                        }
+                        if (videoData) break;
+                    }
+                }
+
+                if (!videoData) {
+                    // Try fallback method with jsonp
+                    videoData = await tryJsonpMethod(url);
+                }
+
+                if (!videoData) {
+                    throw new Error('Unable to fetch video data. Please try uploading the file to a hosting service like GitHub Pages or Netlify for better CORS support.');
+                }
+
+                // Process successful response
+                currentVideoData = videoData;
+                displayVideo(videoData);
+                showMessage('Video loaded successfully!', 'success');
+
+            } catch (error) {
+                console.error('Error processing video:', error);
+                showMessage(`Error: ${error.message}`, 'error');
+            } finally {
+                document.getElementById('loadingSection').style.display = 'none';
+                document.getElementById('processBtn').disabled = false;
+            }
+        }
+
+        async function tryJsonpMethod(url) {
+            return new Promise((resolve) => {
+                // Create a script tag for JSONP
+                const script = document.createElement('script');
+                const callbackName = 'teraboxCallback' + Date.now();
+                
+                window[callbackName] = function(data) {
+                    resolve(data);
+                    document.head.removeChild(script);
+                    delete window[callbackName];
+                };
+
+                script.src = `https://ashlynn.serv00.net/Ashlynnterabox.php/?url=${encodeURIComponent(url)}&callback=${callbackName}`;
+                script.onerror = () => {
+                    resolve(null);
+                    document.head.removeChild(script);
+                    delete window[callbackName];
+                };
+
+                document.head.appendChild(script);
+
+                // Timeout after 10 seconds
+                setTimeout(() => {
+                    if (document.head.contains(script)) {
+                        document.head.removeChild(script);
+                        delete window[callbackName];
+                        resolve(null);
+                    }
+                }, 10000);
+            });
+        }
+
+        function displayVideo(data) {
+            // Extract video information
+            const videoUrl = data.download_url || data.downloadUrl || data.url || data.direct_link;
+            const title = data.title || data.filename || data.name || 'TeraBox Video';
+            const size = data.size || data.fileSize || 'Unknown size';
+            const thumbnail = data.thumbnail || data.thumb || '';
+
+            // Update video info
+            document.getElementById('videoTitle').textContent = title;
+            document.getElementById('videoDetails').innerHTML = `
+                📁 Size: ${formatFileSize(size)}<br>
+                🔗 Source: TeraBox<br>
+                ✅ Status: Ready to play/download
+            `;
+
+            // Set video source
+            const videoPlayer = document.getElementById('videoPlayer');
+            videoPlayer.src = videoUrl;
+            
+            if (thumbnail) {
+                videoPlayer.poster = thumbnail;
+            }
+
+            // Show video section
+            document.getElementById('videoSection').style.display = 'block';
+        }
+
+        function downloadVideo() {
+            if (!currentVideoData) {
+                showMessage('No video data available', 'error');
+                return;
+            }
+
+            const downloadUrl = currentVideoData.download_url || 
+                              currentVideoData.downloadUrl || 
+                              currentVideoData.url || 
+                              currentVideoData.direct_link;
+
+            if (!downloadUrl) {
+                showMessage('Download URL not available', 'error');
+                return;
+            }
+
+            // Create download link
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            link.download = currentVideoData.title || currentVideoData.filename || 'terabox-video.mp4';
+            
+            // For some browsers, we need to add the link to DOM
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showMessage('Download started! Check your downloads folder.', 'success');
+        }
+
+        function openInNewTab() {
+            if (!currentVideoData) {
+                showMessage('No video data available', 'error');
+                return;
+            }
+
+            const videoUrl = currentVideoData.download_url || 
+                           currentVideoData.downloadUrl || 
+                           currentVideoData.url || 
+                           currentVideoData.direct_link;
+
+            if (videoUrl) {
+                window.open(videoUrl, '_blank');
+                showMessage('Video opened in new tab!', 'success');
+            } else {
+                showMessage('Video URL not available', 'error');
+            }
+        }
+
+        function clearAll() {
+            document.getElementById('videoUrl').value = '';
+            document.getElementById('videoSection').style.display = 'none';
+            document.getElementById('loadingSection').style.display = 'none';
+            document.getElementById('messageArea').innerHTML = '';
+            currentVideoData = null;
+        }
+
+        function isValidTeraBoxUrl(url) {
+            return url.toLowerCase().includes('terabox.com') || 
+                   url.toLowerCase().includes('teraboxapp.com') ||
+                   url.toLowerCase().includes('1024terabox.com') ||
+                   url.toLowerCase().includes('1024tera.com') ||
+                   url.toLowerCase().includes('4funbox.com');
+        }
+
+        function formatFileSize(bytes) {
+            if (!bytes || bytes === 'Unknown size') return 'Unknown size';
+            
+            if (typeof bytes === 'string') {
+                return bytes;
+            }
+
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+            if (bytes === 0) return '0 Bytes';
+            
+            const i = Math.floor(Math.log(bytes) / Math.log(1024));
+            return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        function showMessage(message, type) {
+            const messageArea = document.getElementById('messageArea');
+            messageArea.innerHTML = `<div class="${type}">${message}</div>`;
+            
+            // Auto-hide success messages after 5 seconds
+            if (type === 'success') {
+                setTimeout(() => {
+                    messageArea.innerHTML = '';
+                }, 5000);
+            }
+        }
+
+        // Allow Enter key to process video
+        document.getElementById('videoUrl').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                processVideo();
+            }
+        });
+
+        // Auto-focus on input when page loads
+        window.addEventListener('load', function() {
+            document.getElementById('videoUrl').focus();
+        });
+    </script>
+</body>
+</html>
